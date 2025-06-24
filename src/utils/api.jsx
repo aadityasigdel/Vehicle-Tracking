@@ -7,7 +7,7 @@ export default function FetchData() {
 
     const HandleFetch = async ()=>{
       try {
-      const apiresult = await fetch("https://mocki.io/v1/5a70996f-a789-4e3e-b7c2-fe76be4fa909")
+      const apiresult = await fetch("http://185.193.19.5/server/api/v1/recent-location-by-province?province=Bagamati%20Province")
       const result = await apiresult.json()
       setapidata(result)
       } catch (error) {

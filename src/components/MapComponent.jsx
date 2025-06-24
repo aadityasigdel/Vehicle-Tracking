@@ -1,6 +1,8 @@
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import { contextData } from '../ContextApi/Context'
 import { useContext } from "react";
+import Bike from "../assets/Bike.jpg"
+import Car from '../assets/car.jpg'
 
 export default function MapComponent() {
   const { apidata, setapidata } = useContext(contextData);
@@ -48,9 +50,12 @@ export default function MapComponent() {
                 }
                 }
                 icon={{
-                  url: "https://www.svgrepo.com/show/122485/car-placeholder.svg",
-                  scaledSize: new window.google.maps.Size(40, 40)
+                  url: item.categoryId === 1
+                    ? {Bike}
+                    : {Car}, 
+                  scaledSize: new window.google.maps.Size(40, 40),
                 }}
+
               />
             ))}
           </GoogleMap>
