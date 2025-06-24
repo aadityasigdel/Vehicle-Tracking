@@ -1,10 +1,14 @@
 import React, { createContext, useState } from "react";
 
-export default function ContextProvider({ children }) {
-  const [data, setdata] = useState([]);
+export const contextData = createContext();
 
+export default function ContextProvider({ children }) {
+  const [apidata, setapidata] = useState([]);
   return (
     <>
+        <contextData.Provider value={{apidata,setapidata}}>
+          {children}
+        </contextData.Provider>
     </>
   )
 }
