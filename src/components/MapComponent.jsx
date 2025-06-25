@@ -1,8 +1,10 @@
-import { GoogleMap, LoadScript, Marker, Polyline } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, Marker, Polyline } from "@react-google-maps/api";
 import { useContext, useEffect, useState } from "react";
 import Bike from "../assets/Bike.jpg";
 import Car from '../assets/car.jpg';
 import { contextData } from '../ContextApi/Context';
+
+  const libraries = ["geometry"];
 
 export default function MapComponent() {
 
@@ -18,6 +20,12 @@ export default function MapComponent() {
   //Stores Vehicle speed
   const [speeds, setSpeeds] = useState({});
 
+
+  //Loading Fix
+    const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: "AIzaSyAmhPPLqzBFkyrkmaimjjKnFFLRd2SqzZI", 
+    libraries: libraries, 
+  });
 
   // Map Height and Width
   const DefaultStyle = {
@@ -42,6 +50,8 @@ export default function MapComponent() {
 
   //Stores location data and Rider data from api to create ProlyLine
   useEffect(() => {
+    if (!isLoaded) return;
+
     if (apidata.length > 0) {
       const updated = {};
       const newSpeeds = {};
@@ -87,6 +97,8 @@ export default function MapComponent() {
     }
   }, [apidata]);
 
+  if (!isLoaded) return <div>Loading Map...</div>;
+
   return (
     <>
       <div className="flex flex-col m-h-screen">
@@ -96,7 +108,7 @@ export default function MapComponent() {
         <div className="flex border-x-2 border-gray-700 shadow-inner">
 
           {/*Loads the Google Map Component */}
-          <LoadScript googleMapsApiKey="AIzaSyAmhPPLqzBFkyrkmaimjjKnFFLRd2SqzZI">
+      
             <GoogleMap
               center={mapCenter}
               mapContainerStyle={DefaultStyle}
@@ -141,7 +153,6 @@ export default function MapComponent() {
                 />
               ))}
             </GoogleMap>
-          </LoadScript>
         </div>
 
         {/*Choose Vehicle to follow */}
