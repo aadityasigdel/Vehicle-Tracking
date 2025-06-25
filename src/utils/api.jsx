@@ -1,5 +1,5 @@
-import { useContext, useEffect } from "react"
-import { contextData } from "../ContextApi/Context"
+import { useContext, useEffect } from "react";
+import { contextData } from "../ContextApi/Context";
 
 export default function FetchData() {
 
@@ -9,7 +9,7 @@ export default function FetchData() {
   //Fetch data from Api and Stors it in apidata
   const HandleFetch = async () => {
     try {
-      const apiresult = await fetch("http://localhost:5000/api/vehicles")
+      const apiresult = await fetch("http://192.168.100.178:5000/api/vehicles");
       const result = await apiresult.json()
       setapidata(result)
     } catch (error) {
