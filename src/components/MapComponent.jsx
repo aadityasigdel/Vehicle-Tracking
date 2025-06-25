@@ -11,7 +11,7 @@ export default function MapComponent() {
   const { apidata, setapidata } = useContext(contextData);
 
   //Stores location data for prolyline
-  const [LocationData, setLocationData] = useState([]);
+  const [LocationData, setLocationData] = useState({});
 
   // Map Height and Width
   const DefaultStyle = {
@@ -62,60 +62,67 @@ export default function MapComponent() {
 
   return (
     <>
-      <div className="flex border-t-3 border-r-3 border-l-3 border-black rounded-t-xl ">
+      <div className="flex flex-col h-screen">
+        <header className =" text-black p-4 font-bold text-xl flex justify-center items-center  border-t-3 border-r-3 border-l-3 border-black rounded-t-xl">
+        <div>Live Vehicle Tracking Dashboard</div>
+      </header>
 
-        {/*Loads the Google Map Component */}
-        <LoadScript googleMapsApiKey="AIzaSyAmhPPLqzBFkyrkmaimjjKnFFLRd2SqzZI">
-          <GoogleMap
-            center={defaultCenter}
-            mapContainerStyle={DefaultStyle}
-            zoom={15}
+        <div className="flex  border-r-3 border-l-3 border-black  ">
+
+          {/*Loads the Google Map Component */}
+          <LoadScript googleMapsApiKey="AIzaSyAmhPPLqzBFkyrkmaimjjKnFFLRd2SqzZI">
+            <GoogleMap
+              center={defaultCenter}
+              mapContainerStyle={DefaultStyle}
+              zoom={15}
 
 
-          >
-            {/*Loads Marker Data from Api*/}
-            {apidata.map((item) => (
-              <Marker
-                key={item.riderId}
-                position={{ lat: item.latitude, lng: item.longitude }}
-                label={{
-                  text: item.name,
-                  color: 'white',
-                  fontWeight: "bold",
-                  fontSize: "14px"
+            >
+              {/*Loads Marker Data from Api*/}
+              {apidata.map((item) => (
+                <Marker
+                  key={item.riderId}
+                  position={{ lat: item.latitude, lng: item.longitude }}
+                  label={{
+                    text: item.name,
+                    color: 'white',
+                    fontWeight: "bold",
+                    fontSize: "14px"
 
-                }
-                }
-                icon={{
-                  url: item.categoryId === 1
-                    ? { Bike }
-                    : { Car },
-                  scaledSize: new window.google.maps.Size(60, 60),
-                }}
+                  }
+                  }
+                  icon={{
+                    url: item.categoryId === 1
+                      ? Bike
+                      : Car,
+                    scaledSize: new window.google.maps.Size(60, 60),
+                  }}
 
-              />
-            ))}
+                />
+              ))}
 
-          {/*Creates ProlyLine from stored data */}
-            {Object.entries(LocationData).map(([riderId, path]) => (
-              <Polyline
-                key={riderId}
-                path={path}
-                options={{
-                  strokeColor: "#FF0000",
-                  strokeOpacity: 1.0,
-                  strokeWeight: 2,
-                }}
-              />
-            ))}
-          </GoogleMap>
-        </LoadScript>
-      </div>
-      <div className="bg-gray-100 p-4 text-sm  border-b-3 border-r-3 border-l-3 border-black rounded-b-xl">
-        <h3 className="font-semibold mb-2">Live Vehicle Info</h3>
-        <ul className="space-y-1">
+              {/*Creates ProlyLine from stored data */}
+              {Object.entries(LocationData).map(([riderId, path]) => (
+                <Polyline
+                  key={riderId}
+                  path={path}
+                  options={{
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 1.0,
+                    strokeWeight: 2,
+                  }}
+                />
+              ))}
+            </GoogleMap>
+          </LoadScript>
+        </div>
+        <div className="bg-gray-100 p-4 text-sm  border-b-3 border-r-3 border-l-3 border-black rounded-b-xl">
+          <h3 className="font-semibold mb-2">Live Vehicle Info</h3>
+          {apidata.length === 0 && <li className="text-center text-gray-500">No data available</li>}
+          <ul className="space-y-1">
 
-        </ul>
+          </ul>
+        </div>
       </div>
     </>
   );
