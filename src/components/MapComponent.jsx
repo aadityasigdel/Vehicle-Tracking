@@ -27,22 +27,6 @@ export default function MapComponent() {
 
   const selectedRider = apidata.find(rider => rider.riderId === selectedRiderId);
 
-  // Haversine formula to calculate distance between two lat/lng in kilometers
-  function calculateDistance(lat1, lon1, lat2, lon2) {
-
-    // Radius of Earth in km
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }
-
-
   //Map centred to Adjust to KTM if no Data found
   const defaultCenter = {
     lat: 27.7172,
@@ -78,27 +62,21 @@ export default function MapComponent() {
 
 
         // Speed calculation 
-        const timeArr = rider.timestamp;
-        const currentTime = new Date(...timeArr);
+        const len = updated[id].length;
+        if (len > 1) {
+          const prevPoint = updated[id][len - 2];
+          const currPoint = updated[id][len - 1];
 
-        const prevIndex = updated[id].length - 2;
-        const currIndex = updated[id].length - 1;
-
-        if (prevIndex >= 0) {
-          const prevPoint = updated[id][prevIndex];
-          const currPoint = updated[id][currIndex];
-
-          const prevTime = new Date(currentTime.getTime() - 5000);
-
-          const distance = calculateDistance(
-            prevPoint.lat,
-            prevPoint.lng,
-            currPoint.lat,
-            currPoint.lng
+          //Calculate Distance
+          const distanceInMeters = window.google.maps.geometry.spherical.computeDistanceBetween(
+            prevPoint,
+            currPoint
           );
 
+          //calculate Speed
+          const distanceInKm = distanceInMeters / 1000;
           const timeInHours = 5 / 3600;
-          const speed = distance / timeInHours;
+          const speed = distanceInKm / timeInHours;
 
           newSpeeds[id] = speed.toFixed(2);
         }
@@ -138,18 +116,20 @@ export default function MapComponent() {
                   position={{ lat: item.latitude, lng: item.longitude }}
                   label={{
                     text: item.name,
-                    color: item.categoryId = 'black',
+                    color: item.categoryId = 'white',
                     fontWeight: 'bold',
                     fontSize: '14px',
                     fontFamily: 'Roboto',
                   }}
-                  icon={{
-                    url: item.categoryId === 1
-                      ? Bike
-                      : Car,
-                    scaledSize: new window.google.maps.Size(40, 40),
-                  }}
-
+                  icon={
+                    window.google && window.google.maps
+                      ? {
+                        url: item.categoryId === 1 ? Bike : Car,
+                        scaledSize: new window.google.maps.Size(60, 60),
+                        labelOrigin: new window.google.maps.Point(30, 70)
+                      }
+                      : undefined
+                  }
                 />
               ))}
 
@@ -159,7 +139,7 @@ export default function MapComponent() {
                   key={riderId}
                   path={path}
                   options={{
-                    strokeColor: "#FF0000",
+                    strokeColor: "blue",
                     strokeOpacity: 1.0,
                     strokeWeight: 2,
                   }}
