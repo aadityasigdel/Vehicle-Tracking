@@ -97,6 +97,8 @@ export default function MapComponent() {
     }
   }, [apidata]);
 
+  console.log(apidata)
+
   if (!isLoaded) return <div>Loading Map...</div>;
 
   return (
@@ -155,25 +157,34 @@ export default function MapComponent() {
           </GoogleMap>
         </div>
 
-        {/*Choose Vehicle to follow */}
+        {/* Choose Vehicle to Follow */}
         <div className="bg-gray-200 p-4 text-sm border-x-2 border-b-2 border-gray-700 rounded-b-xl shadow-md">
           <h3 className="font-semibold mb-2 text-amber-800">Live Vehicle Info</h3>
           <div className="flex flex-wrap gap-3">
             {apidata.map((data) => (
-              <button
-                key={data.riderId}
-                className='bg-white border-amber-300 px-3 rounded-md border-2 text-amber-800 hover:border-amber-400'
+              <div key={data.riderId} className="relative group">
+                <button
+                  className="bg-white border-amber-300 px-3 py-1 rounded-md border-2 text-amber-800 hover:border-amber-400"
+                  onClick={() => setSelectedRiderId(data.riderId)}
+                >
+                  {data.name}
+                  <p>
+                    Speed: {speeds[data.riderId] ? `${speeds[data.riderId]} km/h` : 'Calculating...'}
+                  </p>
+                </button>
 
-                onClick={() => setSelectedRiderId(data.riderId)}
-              >
-                {data.name}
-                <p>
-                  Speed: {speeds[data.riderId] ? `${speeds[data.riderId]} km/h` : 'Calculating...'}
-                </p>
-              </button>
+                {/* Tooltip on hover */}
+                <div className="absolute z-10 hidden group-hover:block bg-white text-xs text-gray-800 border border-gray-300 rounded shadow-md p-2 w-60 top-full left-1/2 transform -translate-x-1/2 mt-1">
+                  <p><span className="font-semibold">Branch:</span> {data.branchName}</p>
+                  <p><span className="font-semibold">Mobile:</span> {data.mobileNo}</p>
+                  <p><span className="font-semibold">Vehicle No:</span> {data.vehicleNumber}</p>
+                  <p><span className="font-semibold">Brand:</span> {data.vehicleBrand}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
+
       </div>
     </>
   );
