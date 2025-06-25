@@ -4,7 +4,7 @@ import Bike from "../assets/Bike.jpg";
 import Car from '../assets/car.jpg';
 import { contextData } from '../ContextApi/Context';
 
-  const libraries = ["geometry"];
+const libraries = ["geometry"];
 
 export default function MapComponent() {
 
@@ -22,9 +22,9 @@ export default function MapComponent() {
 
 
   //Loading Fix
-    const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: "AIzaSyAmhPPLqzBFkyrkmaimjjKnFFLRd2SqzZI", 
-    libraries: libraries, 
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: "AIzaSyAmhPPLqzBFkyrkmaimjjKnFFLRd2SqzZI",
+    libraries: libraries,
   });
 
   // Map Height and Width
@@ -108,51 +108,51 @@ export default function MapComponent() {
         <div className="flex border-x-2 border-gray-700 shadow-inner">
 
           {/*Loads the Google Map Component */}
-      
-            <GoogleMap
-              center={mapCenter}
-              mapContainerStyle={DefaultStyle}
-              zoom={15}
+
+          <GoogleMap
+            center={mapCenter}
+            mapContainerStyle={DefaultStyle}
+            zoom={15}
 
 
-            >
-              {/*Loads Marker Data from Api*/}
-              {apidata.map((item) => (
-                <Marker
-                  key={item.riderId}
-                  position={{ lat: item.latitude, lng: item.longitude }}
-                  label={{
-                    text: item.name,
-                    color: item.categoryId = 'white',
-                    fontWeight: 'bold',
-                    fontSize: '14px',
-                    fontFamily: 'Roboto',
-                  }}
-                  icon={
-                    window.google && window.google.maps
-                      ? {
-                        url: item.categoryId === 1 ? Bike : Car,
-                        scaledSize: new window.google.maps.Size(60, 60),
-                        labelOrigin: new window.google.maps.Point(30, 70)
-                      }
-                      : undefined
-                  }
-                />
-              ))}
+          >
+            {/*Loads Marker Data from Api*/}
+            {apidata.map((item) => (
+              <Marker
+                key={item.riderId}
+                position={{ lat: parseFloat(item.latitude), lng: parseFloat(item.longitude) }}
+                label={{
+                  text: item.name,
+                  color: 'white',
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  fontFamily: 'Roboto',
+                }}
+                icon={
+                  window.google && window.google.maps
+                    ? {
+                      url: item.categoryId === 1 ? Bike : Car,
+                      scaledSize: new window.google.maps.Size(60, 60),
+                      labelOrigin: new window.google.maps.Point(30, 70)
+                    }
+                    : undefined
+                }
+              />
+            ))}
 
-              {/*Creates ProlyLine from stored data */}
-              {Object.entries(LocationData).map(([riderId, path]) => (
-                <Polyline
-                  key={riderId}
-                  path={path}
-                  options={{
-                    strokeColor: "blue",
-                    strokeOpacity: 1.0,
-                    strokeWeight: 2,
-                  }}
-                />
-              ))}
-            </GoogleMap>
+            {/*Creates ProlyLine from stored data */}
+            {Object.entries(LocationData).map(([riderId, path]) => (
+              <Polyline
+                key={riderId}
+                path={path}
+                options={{
+                  strokeColor: "blue",
+                  strokeOpacity: 1.0,
+                  strokeWeight: 2,
+                }}
+              />
+            ))}
+          </GoogleMap>
         </div>
 
         {/*Choose Vehicle to follow */}
