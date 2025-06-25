@@ -87,11 +87,6 @@ export default function MapComponent() {
     }
   }, [apidata]);
 
-
-  console.log("Fetched Data:", apidata);
-
-
-
   return (
     <>
       <div className="flex flex-col m-h-screen">
