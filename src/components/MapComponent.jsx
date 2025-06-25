@@ -22,7 +22,7 @@ export default function MapComponent() {
   // Map Height and Width
   const DefaultStyle = {
     width: "100%",
-    height: "65vh"
+    height: "55vh"
   }
 
   const selectedRider = apidata.find(rider => rider.riderId === selectedRiderId);
