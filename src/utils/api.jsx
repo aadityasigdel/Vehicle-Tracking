@@ -9,7 +9,7 @@ export default function FetchData() {
   //Fetch data from Api and Stors it in apidata
   const HandleFetch = async () => {
     try {
-      const apiresult = await await fetch("https://6e7d-...ngrok-free.app/api/vehicles", {
+      const apiresult = await await fetch("https://6e7d-2407-54c0-1b15-b0e2-598a-b787-9447-4f4b.ngrok-free.app/api/vehicles", {
         headers: {
           "ngrok-skip-browser-warning": "true"
         }
