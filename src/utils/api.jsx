@@ -9,7 +9,7 @@ export default function FetchData() {
   //Fetch data from Api and Stors it in apidata
   const HandleFetch = async () => {
     try {
-      const apiresult = await fetch("http://185.193.19.5/server/api/v1/recent-location-by-province?province=Bagamati%20Province")
+      const apiresult = await fetch("http://localhost:5000/api/vehicles")
       const result = await apiresult.json()
       setapidata(result)
     } catch (error) {
