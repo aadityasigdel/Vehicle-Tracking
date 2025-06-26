@@ -1,4 +1,4 @@
-import { useContext, useEffect , useState} from "react";
+import { useContext, useEffect } from "react";
 import { contextData } from "../ContextApi/Context";
 
 export default function FetchData() {
@@ -15,7 +15,7 @@ export default function FetchData() {
   //Fetch data from Api and Stors it in apidata
   const HandleFetch = async () => {
     try {
-      const apiresult = await fetch(`http://localhost:5000/api/v1/recent-location-by-province?province=${encodeURIComponent(selectedProvince)}`, {
+      const apiresult = await fetch(`https://2e82-2407-54c0-1b15-65ca-41ed-3e55-90e1-6d01.ngrok-free.app/api/v1/recent-location-by-province?province=${encodeURIComponent(selectedProvince)}`, {
         headers: {
           "ngrok-skip-browser-warning": "true"
         }
