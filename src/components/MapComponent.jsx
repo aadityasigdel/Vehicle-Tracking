@@ -3,7 +3,6 @@ import { useContext, useEffect, useState, useRef } from "react";
 import Bike from "../assets/Bike.svg";
 import Car from '../assets/car.png';
 import { contextData } from '../ContextApi/Context';
-
 const libraries = ["geometry"];
 
 export default function MapComponent() {
@@ -142,9 +141,10 @@ export default function MapComponent() {
     <div className=" overflow-hidden border-2  border-gray-700 rounded-2xl">
 
       {/* Application Name */}
-      <header className="bg-white text-black p-4 font-bold text-xl text-center ">
-        Live Vehicle Tracking
+      <header className="bg-white text-black p-4 font-bold text-xl flex justify-between items-center">
+        <div>Live Vehicle Tracking</div>
       </header>
+
 
       <div className="py-2 bg-white border-b-2 border-gray-700 flex items-center justify-center space-x-3">
         <label
@@ -283,6 +283,7 @@ export default function MapComponent() {
             )}
           </GoogleMap>
         </div>
+
       </div>
     </div>
   );
