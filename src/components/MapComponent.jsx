@@ -56,44 +56,76 @@ export default function MapComponent() {
   });
 
   //Filtere Searched Users
+  const matchedUser = apidata.find(user =>
+    user.mobileNo.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const filteredUsers = apidata.filter(user =>
     user.mobileNo.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+
+
   // Get Selected Rider
   const selectedRider = apidata.find(rider => rider.riderId === selectedRiderId);
 
+  // Reset initial centering when province changes
   useEffect(() => {
-    if (!initialCenterDone.current && selectedRiderId === null && apidata.length > 0) {
-      const first = apidata[0];
-      setMapCenter({ lat: first.latitude, lng: first.longitude });
-      initialCenterDone.current = true;
+    initialCenterDone.current = false;
+  }, [selectedProvince]);
 
-      if (mapRef) {
-        mapRef.panTo({ lat: first.latitude, lng: first.longitude });
-      }
+  // Initial center (fast, on first load)
+  useEffect(() => {
+    if (!initialCenterDone.current && selectedRiderId === null && apidata.length > 0 && mapRef && selectedProvince === "") {
+      const first = apidata[0];
+      const lat = parseFloat(first.latitude);
+      const lng = parseFloat(first.longitude);
+      mapRef.panTo({ lat, lng });
+      setMapCenter({ lat, lng });
+      initialCenterDone.current = true;
     }
   }, [apidata, selectedRiderId, mapRef]);
 
+  // Delayed center only on province change
+  useEffect(() => {
+    if (!initialCenterDone.current && selectedRiderId === null && apidata.length > 0 && mapRef && selectedProvince !== "") {
+      const timer = setTimeout(() => {
+        const first = apidata[0];
+        const lat = parseFloat(first.latitude);
+        const lng = parseFloat(first.longitude);
+        mapRef.panTo({ lat, lng });
+        setMapCenter({ lat, lng });
+        initialCenterDone.current = true;
+      }, 500); // Delay of 500ms — adjust if needed
 
-  //Center Point With Most Vehicles
-  function calculateCentroid(vehicles) {
-    if (vehicles.length === 0) return defaultCenter;
-    let latSum = 0;
-    let lngSum = 0;
-    vehicles.forEach(v => {
-      latSum += parseFloat(v.latitude);
-      lngSum += parseFloat(v.longitude);
-    });
-    return {
-      lat: latSum / vehicles.length,
-      lng: lngSum / vehicles.length,
-    };
-  }
-
-
+      return () => clearTimeout(timer);
+    }
+  }, [selectedProvince, apidata, selectedRiderId, mapRef]);
 
 
+  //Follows Searched Users
+  useEffect(() => {
+    if (searchTerm.trim() !== "" && matchedUser && mapRef) {
+      const lat = parseFloat(matchedUser.latitude);
+      const lng = parseFloat(matchedUser.longitude);
+      mapRef.panTo({ lat, lng });
+      setMapCenter({ lat, lng });
+      setSelectedRiderId(matchedUser.riderId);
+    }
+  }, [searchTerm, matchedUser, mapRef]);
+
+
+  useEffect(() => {
+    if (selectedRiderId !== null && mapRef) {
+      const rider = apidata.find(r => r.riderId === selectedRiderId);
+      if (rider) {
+        const lat = parseFloat(rider.latitude);
+        const lng = parseFloat(rider.longitude);
+        mapRef.panTo({ lat, lng });
+        setMapCenter({ lat, lng });
+      }
+    }
+  }, [selectedRiderId, mapRef, apidata]);
 
 
   // Store locations and calculate speed
@@ -139,15 +171,18 @@ export default function MapComponent() {
     <div className=" overflow-hidden border-2  border-gray-700 rounded-2xl">
 
       {/* Application Name */}
-      <header className="bg-white text-black p-4 font-bold text-xl flex justify-between items-center">
-        <div>Live Vehicle Tracking</div>
+      <header className="bg-white text-black p-4 font-bold text-xl flex justify-center items-center">
+        <div>Live Vehicles</div>
       </header>
 
 
-      <div className="py-2 bg-white border-b-2 border-gray-700 flex items-center justify-center space-x-3">
-        <label
+      
+
+      <div className="py-2 bg-white border-b-2 border-gray-700 flex items-center justify-around space-x-3">
+       <div>
+         <label
           htmlFor="province-select"
-          className="text-gray-700 font-semibold"
+          className="text-gray-700 font-semibold px-2"
         >
           Select Province:
         </label>
@@ -155,7 +190,8 @@ export default function MapComponent() {
           id="province-select"
           value={selectedProvince}
           onChange={(e) => setSelectedProvince(e.target.value)}
-          className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className="bg-white border border-gray-300 rounded-lg p-2 hover:shadow focus:ring-amber-400"
+
         >
           {provinces.map((province) => (
             <option key={province} value={province}>
@@ -163,126 +199,93 @@ export default function MapComponent() {
             </option>
           ))}
         </select>
-      </div>
+       </div>
 
 
-      <div className="flex flex-grow">
-
-        {/* Scrollable User List Sidebar */}
-        <div className="w-[300px] bg-gray-100 p-4 overflow-y-auto border-r-2 border-gray-400 h-[80vh]">
-
-          <h3 className=" text-2xl mb-2 font-bold text-amber-800">Live Vehicles</h3>
-
-          {/* Search Input */}
+        {/* Search Input */}
+        {/* Search input moved here */}
+        <div className="p-4 bg-white border-b border-gray-300 flex justify-center">
           <input
             type="text"
-            placeholder="Search by phone number..."
+            placeholder="🔍 Search by phone number..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-2 mb-4 rounded border border-gray-300 focus:outline-amber-400"
+            className="w-full max-w-md p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
           />
-          <p className="font-bold">Active Vehicles :  {filteredUsers.length}</p>
-          <div className="flex flex-col gap-3">
-            {filteredUsers.length === 0 ? (
-              <div className="text-gray-500 text-sm">No vehicles found.</div>
-            ) : (
-              filteredUsers.map((data) => (
-                <div key={data.riderId}>
-                  <button
-                    className={`w-full bg-white px-3 py-2 rounded-md border-2 text-left text-amber-800 hover:border-amber-400 ${selectedRiderId === data.riderId ? "border-amber-500" : "border-amber-300"
-                      }`}
-                    onClick={() => {
-                      setSelectedRiderId(selectedRiderId === data.riderId ? null : data.riderId);
-                      if (mapRef) {
-                        mapRef.panTo({ lat: parseFloat(data.latitude), lng: parseFloat(data.longitude) });
-                      }
-                    }}
-                  >
-                    <div className="font-bold">{data.name}</div>
-                    <div className="text-sm">
-                      Speed: {speeds[data.riderId] ? `${speeds[data.riderId]} km/h` : 'Calculating...'}
-                    </div>
-                  </button>
-
-                  {selectedRiderId === data.riderId && (
-                    <div className="bg-white border border-amber-300 rounded-b-md p-3 text-xs mt-1 shadow-inner">
-                      <p><strong>Branch:</strong> {data.branchName}</p>
-                      <p><strong>Mobile:</strong> {data.mobileNo}</p>
-                      <p><strong>Vehicle No:</strong> {data.vehicleNumber}</p>
-                      <p><strong>Brand:</strong> {data.vehicleBrand}</p>
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
         </div>
-
-        {/* Google Map Container */}
-        <div className="flex-grow">
-          <GoogleMap
-            center={mapCenter}
-            mapContainerStyle={{ width: "100%", height: "80vh" }}
-            zoom={15}
-            onLoad={(map) => setMapRef(map)}
-          >
-            {/* Show Marker for Each Vehicle */}
-            {apidata.map((item) => (
-              <Marker
-                key={item.riderId}
-                position={{
-                  lat: parseFloat(item.latitude),
-                  lng: parseFloat(item.longitude),
-                }}
-                label={{
-                  text: item.name,
-                  color: "white",
-                  fontWeight: "bold",
-                  fontSize: "14px",
-                }}
-                icon={{
-                  url: item.categoryId === 1 ? Bike : Car,
-                  scaledSize: new window.google.maps.Size(50, 50),
-                  labelOrigin: new window.google.maps.Point(25, 45),
-                }}
-                onClick={() => setSelectedRiderId(item.riderId)}
-              />
-            ))}
-
-            {/* Draw Polyline for Movement History */}
-            {Object.entries(LocationData).map(([riderId, path]) => (
-              <Polyline
-                key={riderId}
-                path={path}
-                options={{
-                  strokeColor: "blue",
-                  strokeOpacity: 1.0,
-                  strokeWeight: 2,
-                }}
-              />
-            ))}
-
-            {/* Info Window on Selected Marker */}
-            {selectedRider && (
-              <InfoWindow
-                position={{
-                  lat: parseFloat(selectedRider.latitude),
-                  lng: parseFloat(selectedRider.longitude),
-                }}
-                onCloseClick={() => setSelectedRiderId(null)}
-              >
-                <div className="text-sm">
-                  <strong>{selectedRider.name}</strong><br />
-                  Speed: {speeds[selectedRiderId]} km/h<br />
-                  Vehicle No: {selectedRider.vehicleNumber}<br />
-                  Mobile: {selectedRider.mobileNo}
-                </div>
-              </InfoWindow>
-            )}
-          </GoogleMap>
-        </div>
-
+        <p className="font-bold">Active Vehicles :  {filteredUsers.length}</p>
       </div>
+      
+
+
+      {/* Google Map Container */}
+      <div className="flex-grow">
+        <GoogleMap
+          center={mapCenter}
+          mapContainerStyle={{ width: "100%", height: "70vh" }}
+          zoom={15}
+          onLoad={(map) => setMapRef(map)}
+        >
+          {/* Show Marker for Each Vehicle */}
+          {apidata.map((item) => (
+            <Marker
+              key={item.riderId}
+              position={{
+                lat: parseFloat(item.latitude),
+                lng: parseFloat(item.longitude),
+              }}
+              label={{
+                text: item.name,
+                color: "white",
+                fontWeight: "bold",
+                fontSize: "14px",
+              }}
+              icon={{
+                url: item.categoryId === 1 ? Bike : Car,
+                scaledSize: new window.google.maps.Size(50, 50),
+                labelOrigin: new window.google.maps.Point(25, 45),
+              }}
+              onClick={() => setSelectedRiderId(item.riderId)}
+            />
+          ))}
+
+          {/* Draw Polyline for Movement History */}
+          {Object.entries(LocationData).map(([riderId, path]) => (
+            <Polyline
+              key={riderId}
+              path={path}
+              options={{
+                strokeColor: "blue",
+                strokeOpacity: 1.0,
+                strokeWeight: 2,
+              }}
+            />
+          ))}
+
+          {/* Info Window on Selected Marker */}
+          {selectedRider && (
+            <InfoWindow
+              position={{
+                lat: parseFloat(selectedRider.latitude),
+                lng: parseFloat(selectedRider.longitude),
+              }}
+              onCloseClick={() => setSelectedRiderId(null)}
+            >
+
+              <div className="text-sm space-y-1">
+                <p className="font-bold text-lg">{selectedRider.name}</p>
+                <p>🚗 Vehicle No: <strong>{selectedRider.vehicleNumber}</strong></p>
+                <p>📱 Mobile: {selectedRider.mobileNo}</p>
+                <p>💨 Speed: {speeds[selectedRiderId]} km/h</p>
+              </div>
+
+
+            </InfoWindow>
+          )}
+        </GoogleMap>
+      </div>
+
+
     </div>
   );
 }
