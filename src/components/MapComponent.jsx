@@ -64,15 +64,13 @@ export default function MapComponent() {
   const selectedRider = apidata.find(rider => rider.riderId === selectedRiderId);
 
   useEffect(() => {
-    // Only center once on initial load when no user selected
     if (!initialCenterDone.current && selectedRiderId === null && apidata.length > 0) {
-      const centroid = calculateCentroid(apidata);
-      setMapCenter(centroid);
+      const first = apidata[0];
+      setMapCenter({ lat: first.latitude, lng: first.longitude });
       initialCenterDone.current = true;
 
-      // Optional: pan the map if map instance exists
       if (mapRef) {
-        mapRef.panTo(centroid);
+        mapRef.panTo({ lat: first.latitude, lng: first.longitude });
       }
     }
   }, [apidata, selectedRiderId, mapRef]);
