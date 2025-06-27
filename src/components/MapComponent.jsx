@@ -158,17 +158,16 @@ export default function MapComponent() {
   if (!isLoaded) return <div>Loading Map...</div>;
 
   return (
-    <div className=" overflow-hidden border-2  border-gray-700 rounded-2xl">
+    <div className=" overflow-hidden border-2  border-gray-700 rounded-2xl ">
 
-      {/* Application Name */}
-      <header className="bg-white text-black p-4 font-bold text-xl flex justify-center items-center">
-        <div>Live Vehicles</div>
+      {/* Project Name */}
+      <header className=" text-black p-4 font-semibold text-2xl flex justify-center items-center shadow-md z-50 select-none">
+        <h1>
+          Live Vehicles Tracker
+        </h1>
       </header>
 
-
-
-
-      <div className="py-2 bg-white border-b-2 border-gray-700 flex items-center justify-around space-x-3">
+      <div className="py-2 bg-white border-b-2 border-gray-800 flex items-center justify-around space-x-3">
         <div>
           <label
             htmlFor="province-select"
@@ -180,7 +179,7 @@ export default function MapComponent() {
             id="province-select"
             value={selectedProvince}
             onChange={(e) => setSelectedProvince(e.target.value)}
-            className="bg-white border border-gray-300 rounded-lg p-2 hover:shadow focus:ring-amber-400"
+            className="bg-white border border-gray-500 rounded-lg p-2 hover:shadow focus:ring-amber-400"
 
           >
             {provinces.map((province) => (
@@ -193,25 +192,30 @@ export default function MapComponent() {
 
 
         {/* Search Input */}
-        <div className="p-4 bg-white  border-gray-300 flex justify-center">
-          <label className=" font-bold text-2xl px-2">
-            Search
-          </label>
+        <div className="flex items-center space-x-2 flex-grow max-w-md ">
+          <label htmlFor="search" className="sr-only">Search phone number</label>
           <input
-            type="text"
-            placeholder="🔍 phone number..."
+            id="search"
+            type="search"
+            placeholder="🔍 Search by phone number..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full max-w-md p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
+            className="flex-grow rounded-md border border-gray-500 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
           />
-          <button
-            onClick={handleClear}
-            className="bg-red-500 hover:bg-red-600 text-white font-bold px-2 px-4 rounded mx-2 shadow"
-          >
-            Clear
-          </button>
+          {searchTerm && (
+            <button
+              onClick={handleClear}
+              aria-label="Clear search"
+              className="text-white bg-red-600 hover:bg-red-700 rounded-md px-3 py-2 transition"
+            >
+              Clear
+            </button>
+          )}
         </div>
-        <p className="font-bold">Active Vehicles :  {filteredUsers.length}</p>
+        <p className="font-semibold text-indigo-600 bg-indigo-100 inline-block px-3 py-1 rounded-md shadow-sm ">
+          Active Vehicles: <span className="font-bold">{filteredUsers.length}</span>
+        </p>
+
       </div>
 
 
