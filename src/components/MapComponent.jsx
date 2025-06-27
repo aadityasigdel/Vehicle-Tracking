@@ -203,11 +203,10 @@ export default function MapComponent() {
 
 
         {/* Search Input */}
-        {/* Search input moved here */}
         <div className="p-4 bg-white border-b border-gray-300 flex justify-center">
           <input
             type="text"
-            placeholder="🔍 Search by phone number..."
+            placeholder="🔍 phone number..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full max-w-md p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
