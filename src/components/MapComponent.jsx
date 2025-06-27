@@ -36,6 +36,8 @@ export default function MapComponent() {
   //Stores Selected Rider ID
   const [selectedRiderId, setSelectedRiderId] = useState(null);
 
+
+
   //Stores  Location data from Api
   const [LocationData, setLocationData] = useState({});
 
@@ -55,14 +57,24 @@ export default function MapComponent() {
     libraries: libraries,
   });
 
-  //Filtere Searched Users
-  const matchedUser = apidata.find(user =>
-    user.mobileNo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  //Filtered Searched Users
   const filteredUsers = apidata.filter(user =>
     user.mobileNo.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Reset Filtered Searched Users
+  const handleClear = () => {
+    setSearchTerm("");
+    setSelectedRiderId(null);
+
+    if (apidata.length > 0 && mapRef) {
+      const first = apidata[0];
+      const lat = parseFloat(first.latitude);
+      const lng = parseFloat(first.longitude);
+      mapRef.panTo({ lat, lng });
+      setMapCenter({ lat, lng });
+    }
+  };
 
 
 
@@ -76,44 +88,34 @@ export default function MapComponent() {
 
   // Initial center (fast, on first load)
   useEffect(() => {
-    if (!initialCenterDone.current && selectedRiderId === null && apidata.length > 0 && mapRef && selectedProvince === "") {
-      const first = apidata[0];
-      const lat = parseFloat(first.latitude);
-      const lng = parseFloat(first.longitude);
-      mapRef.panTo({ lat, lng });
-      setMapCenter({ lat, lng });
-      initialCenterDone.current = true;
-    }
-  }, [apidata, selectedRiderId, mapRef]);
-
-  // Delayed center only on province change
-  useEffect(() => {
-    if (!initialCenterDone.current && selectedRiderId === null && apidata.length > 0 && mapRef && selectedProvince !== "") {
+    if (!initialCenterDone.current && selectedRiderId === null && apidata.length > 0 && mapRef) {
+      const delay = selectedProvince ? 500 : 0;
       const timer = setTimeout(() => {
-        const first = apidata[0];
-        const lat = parseFloat(first.latitude);
-        const lng = parseFloat(first.longitude);
+        const { latitude, longitude } = apidata[0];
+        const lat = parseFloat(latitude), lng = parseFloat(longitude);
         mapRef.panTo({ lat, lng });
         setMapCenter({ lat, lng });
         initialCenterDone.current = true;
-      }, 500); // Delay of 500ms — adjust if needed
-
+      }, delay);
       return () => clearTimeout(timer);
     }
   }, [selectedProvince, apidata, selectedRiderId, mapRef]);
 
 
+
   //Follows Searched Users
   useEffect(() => {
-    if (searchTerm.trim() !== "" && matchedUser && mapRef) {
-      const lat = parseFloat(matchedUser.latitude);
-      const lng = parseFloat(matchedUser.longitude);
+    if (searchTerm.trim() !== "" && filteredUsers.length > 0 && mapRef) {
+      const user = filteredUsers[0];
+      const lat = parseFloat(user.latitude);
+      const lng = parseFloat(user.longitude);
       mapRef.panTo({ lat, lng });
       setMapCenter({ lat, lng });
-      setSelectedRiderId(matchedUser.riderId);
-    }
-  }, [searchTerm, matchedUser, mapRef]);
+      setSelectedRiderId(user.riderId);
 
+    } else {
+    }
+  }, [searchTerm, filteredUsers, mapRef]);
 
   useEffect(() => {
     if (selectedRiderId !== null && mapRef) {
@@ -130,40 +132,28 @@ export default function MapComponent() {
 
   // Store locations and calculate speed
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isLoaded || !window.google?.maps?.geometry || !apidata.length) return;
 
-    if (apidata.length > 0) {
-      const updated = {};
-      const newSpeeds = {};
+    const updated = {};
+    const newSpeeds = {};
 
-      apidata.forEach((rider) => {
-        const id = rider.riderId;
-        const newPoint = {
-          lat: parseFloat(rider.latitude),
-          lng: parseFloat(rider.longitude),
-        };
+    apidata.forEach(rider => {
+      const id = rider.riderId;
+      const point = { lat: +rider.latitude, lng: +rider.longitude };
+      updated[id] = LocationData[id] ? [...LocationData[id], point] : [point];
+      if (updated[id].length > 40) updated[id].shift();
 
-        if (!updated[id]) updated[id] = [];
-        if (LocationData[id]) updated[id] = [...LocationData[id]];
+      if (updated[id].length > 1) {
+        const prev = new window.google.maps.LatLng(updated[id].at(-2));
+        const curr = new window.google.maps.LatLng(updated[id].at(-1));
+        const dist = window.google.maps.geometry.spherical.computeDistanceBetween(prev, curr);
+        newSpeeds[id] = ((dist / 1000) / (5 / 3600)).toFixed(2);
+      }
+    });
 
-        updated[id].push(newPoint);
-        if (updated[id].length > 40) updated[id].shift();
-
-        const len = updated[id].length;
-        if (len > 1 && window.google?.maps?.geometry) {
-          const prev = new window.google.maps.LatLng(updated[id][len - 2]);
-          const curr = new window.google.maps.LatLng(updated[id][len - 1]);
-
-          const distance = window.google.maps.geometry.spherical.computeDistanceBetween(prev, curr);
-          const speed = (distance / 1000) / (5 / 3600);
-          newSpeeds[id] = speed.toFixed(2);
-        }
-      });
-
-      setLocationData(updated);
-      setSpeeds(newSpeeds);
-    }
-  }, [apidata]);
+    setLocationData(updated);
+    setSpeeds(newSpeeds);
+  }, [apidata, isLoaded]);
 
   if (!isLoaded) return <div>Loading Map...</div>;
 
@@ -176,34 +166,37 @@ export default function MapComponent() {
       </header>
 
 
-      
+
 
       <div className="py-2 bg-white border-b-2 border-gray-700 flex items-center justify-around space-x-3">
-       <div>
-         <label
-          htmlFor="province-select"
-          className="text-gray-700 font-semibold px-2"
-        >
-          Select Province:
-        </label>
-        <select
-          id="province-select"
-          value={selectedProvince}
-          onChange={(e) => setSelectedProvince(e.target.value)}
-          className="bg-white border border-gray-300 rounded-lg p-2 hover:shadow focus:ring-amber-400"
+        <div>
+          <label
+            htmlFor="province-select"
+            className="text-black font-semibold px-2 "
+          >
+            Select Province:
+          </label>
+          <select
+            id="province-select"
+            value={selectedProvince}
+            onChange={(e) => setSelectedProvince(e.target.value)}
+            className="bg-white border border-gray-300 rounded-lg p-2 hover:shadow focus:ring-amber-400"
 
-        >
-          {provinces.map((province) => (
-            <option key={province} value={province}>
-              {province}
-            </option>
-          ))}
-        </select>
-       </div>
+          >
+            {provinces.map((province) => (
+              <option key={province} value={province}>
+                {province}
+              </option>
+            ))}
+          </select>
+        </div>
 
 
         {/* Search Input */}
-        <div className="p-4 bg-white border-b border-gray-300 flex justify-center">
+        <div className="p-4 bg-white  border-gray-300 flex justify-center">
+          <label className=" font-bold text-2xl px-2">
+            Search
+          </label>
           <input
             type="text"
             placeholder="🔍 phone number..."
@@ -211,10 +204,16 @@ export default function MapComponent() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full max-w-md p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
           />
+          <button
+            onClick={handleClear}
+            className="bg-red-500 hover:bg-red-600 text-white font-bold px-2 px-4 rounded mx-2 shadow"
+          >
+            Clear
+          </button>
         </div>
         <p className="font-bold">Active Vehicles :  {filteredUsers.length}</p>
       </div>
-      
+
 
 
       {/* Google Map Container */}
@@ -233,12 +232,6 @@ export default function MapComponent() {
                 lat: parseFloat(item.latitude),
                 lng: parseFloat(item.longitude),
               }}
-              label={{
-                text: item.name,
-                color: "white",
-                fontWeight: "bold",
-                fontSize: "14px",
-              }}
               icon={{
                 url: item.categoryId === 1 ? Bike : Car,
                 scaledSize: new window.google.maps.Size(50, 50),
@@ -249,17 +242,18 @@ export default function MapComponent() {
           ))}
 
           {/* Draw Polyline for Movement History */}
-          {Object.entries(LocationData).map(([riderId, path]) => (
+          {selectedRiderId && LocationData[selectedRiderId] && (
             <Polyline
-              key={riderId}
-              path={path}
+              path={LocationData[selectedRiderId]}
               options={{
                 strokeColor: "blue",
                 strokeOpacity: 1.0,
                 strokeWeight: 2,
               }}
             />
-          ))}
+          )}
+
+
 
           {/* Info Window on Selected Marker */}
           {selectedRider && (
