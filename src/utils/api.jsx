@@ -15,7 +15,7 @@ export default function FetchData() {
   //Fetch data from Api and Stors it in apidata
   const HandleFetch = async () => {
     try {
-      const apiresult = await fetch(`https://667a-2407-54c0-1b15-bd46-2c66-922c-a958-4699.ngrok-free.app/api/v1/recent-location-by-province?province=${encodeURIComponent(selectedProvince)}`, {
+      const apiresult = await fetch(`https://de3c-2407-54c0-1b15-5263-8ddc-fa9e-c08b-83c5.ngrok-free.app/api/v1/recent-location-by-province?province=${encodeURIComponent(selectedProvince)}`, {
         headers: {
           "ngrok-skip-browser-warning": "true"
         }
