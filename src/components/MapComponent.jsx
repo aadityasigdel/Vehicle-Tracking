@@ -18,14 +18,15 @@ export default function MapComponent() {
     "Sudurpashchim Province"
   ];
 
-  //Province
-  const { selectedProvince, setSelectedProvince } = useContext(contextData)
+  //Access Data from Api using contextapi
+  const { selectedProvince, setSelectedProvince,apidata } = useContext(contextData)
+
+
 
   //Stores Location for static center the Map
   const defaultCenter = { lat: 27.7172, lng: 85.3240 };
 
-  // Access Data from Api
-  const { apidata } = useContext(contextData);
+
 
   //Stores Map center
   const [mapCenter, setMapCenter] = useState(defaultCenter);
@@ -158,16 +159,18 @@ export default function MapComponent() {
   if (!isLoaded) return <div>Loading Map...</div>;
 
   return (
-    <div className=" overflow-hidden border-2  border-gray-700 rounded-2xl ">
+    <div className="border border-gray-300 rounded-xl shadow-md overflow-hidden bg-white">
+
 
       {/* Project Name */}
-      <header className=" text-black p-4 font-semibold text-2xl flex justify-center items-center shadow-md z-50 select-none">
+     <header className="text-black p-4 font-semibold text-2xl flex justify-center items-center shadow-md z-50">
         <h1>
           Live Vehicles Tracker
         </h1>
       </header>
 
-      <div className="py-2 bg-white border-b-2 border-gray-800 flex items-center justify-around space-x-3">
+      <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 bg-gray-50 border-b">
+
         <div>
           <label
             htmlFor="province-select"
@@ -179,7 +182,8 @@ export default function MapComponent() {
             id="province-select"
             value={selectedProvince}
             onChange={(e) => setSelectedProvince(e.target.value)}
-            className="bg-white border border-gray-500 rounded-lg p-2 hover:shadow focus:ring-amber-400"
+           className="border border-gray-300 rounded-md px-2 py-1 text-md font-light"
+
 
           >
             {provinces.map((province) => (
